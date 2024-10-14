@@ -37,6 +37,31 @@ class UsersController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+	async function getUserProfile(req, res) {
+		const token = req.header['x-token'];
+
+		if (!token) {
+			return res.status(401).json({ error: "Missing token" });
+		}
+
+		const rediskey = `auth_${token}`;
+		const userId = await redisClient.get(rediskey);
+
+		if (!userId) {
+			return res.status(401).json({ error: 'Unauthorized' });
+		}
+
+		const user = await dbClient.db.collection('users').findOne({_id: dbClient.Object(userId) });
+
+		if (!user) {
+			return res.status(401).json({ error: 'Unauthorized' });
+		}
+		
+		return res.status(200).json({
+			id: user._id.toString(),
+			email: user.email,
+		});
+	}
 }
 
 export default UsersController;
