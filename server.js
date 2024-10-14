@@ -3,6 +3,8 @@ import routeController from './routes';
 
 const app = express();
 
+app.use(express.json());
+
 routeController(app);
 
 const port = process.env.PORT || 5000;

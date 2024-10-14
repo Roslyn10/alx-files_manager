@@ -1,9 +1,8 @@
 import sha1 from 'sha1';
-import Queue from 'bull/lib/queue';
 import dbClient from '../utils/db';
 
 class UsersController {
-  static async createUser(req, res) {
+  static async postNew(req, res) {
     const { email, password } = req.body;
 
     if (!email) {
@@ -15,7 +14,8 @@ class UsersController {
     }
 
     try {
-      const userExists = await dbClient.db.collection('users').findOne({ email });
+      const userExists = await dbClient.db().collection('users').findOne({ email });
+
       if (userExists) {
         return res.status(400).json({ error: 'Already exist' });
       }
@@ -26,7 +26,7 @@ class UsersController {
         password: hashedPassword,
       };
 
-      const result = await dbClient.db.collection('users').insertOne(newUser);
+     const result = await dbClient.db().collection('users').insertOne(newUser);
 
       return res.status(201).json({
         id: result.insertedId,

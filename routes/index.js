@@ -15,11 +15,9 @@ const routeController = (app) => {
         AppController.getStats(req, res);
     });
 
-    router.get('/users', (req, res) => {
+    router.post('/users', (req, res) => {
         UsersController.postNew(req, res);
     });
 }
 
-// Export the routeController function
-module.exports = routeController;
-
+export default routeController;
