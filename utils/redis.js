@@ -1,6 +1,7 @@
 // Simple interface that reacts with a redis database
+import { promisify } from 'util';
+import { createClient } from 'redis';
 const redis = require('redis');
-const { promisify } = require('util');
 
 class RedisClient {
   constructor () {
