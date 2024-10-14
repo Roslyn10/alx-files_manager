@@ -44,6 +44,9 @@ const routeController = (app) => {
 	router.put('/filess/:id/publish', (req, res) => {
 		FilesController.putUnpublish(req, res);
 	});
+	router.get('/files/:id/data', (req, res) => {
+		FilesController.getFile(req, res);
+	});
 };
 
 export default routeController;
