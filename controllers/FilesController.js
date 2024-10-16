@@ -3,10 +3,9 @@ import { promisify } from 'util';
 import Queue from 'bull/lib/queue';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  mkdir, writeFile, stat, existsSync, realpath,
+  mkdir, writeFile, stat, existsSync, realpath
 } from 'fs';
 import { join as joinPath } from 'path';
-import { Request, Response } from 'express';
 import { contentType } from 'mime-types';
 import mongoDBCore from 'mongodb/lib/core';
 import dbClient from '../utils/db';
@@ -15,7 +14,7 @@ import { getUserFromXToken } from '../utils/auth';
 const VALID_FILE_TYPES = {
   folder: 'folder',
   file: 'file',
-  image: 'image',
+  image: 'image'
 };
 const ROOT_FOLDER_ID = 0;
 const DEFAULT_ROOT_FOLDER = 'files_manager';
@@ -32,7 +31,7 @@ const isValidId = (id) => {
   const charRanges = [
     [48, 57],
     [97, 102],
-    [65, 70],
+    [65, 70]
   ];
   if (typeof id !== 'string' || id.length !== size) {
     return false;
@@ -50,7 +49,7 @@ const isValidId = (id) => {
 };
 
 export default class FilesController {
-  static async postUpload(req, res) {
+  static async postUpload (req, res) {
     const { user } = req;
     const name = req.body ? req.body.name : null;
     const type = req.body ? req.body.type : null;
@@ -73,7 +72,7 @@ export default class FilesController {
     if ((parentId !== ROOT_FOLDER_ID) && (parentId !== ROOT_FOLDER_ID.toString())) {
       const file = await (await dbClient.filesCollection())
         .findOne({
-          _id: new mongoDBCore.BSON.ObjectId(isValidId(parentId) ? parentId : NULL_ID),
+          _id: new mongoDBCore.BSON.ObjectId(isValidId(parentId) ? parentId : NULL_ID)
         });
 
       if (!file) {
@@ -96,7 +95,7 @@ export default class FilesController {
       isPublic,
       parentId: (parentId === ROOT_FOLDER_ID) || (parentId === ROOT_FOLDER_ID.toString())
         ? '0'
-        : new mongoDBCore.BSON.ObjectId(parentId),
+        : new mongoDBCore.BSON.ObjectId(parentId)
     };
     await mkDirAsync(baseDir, { recursive: true });
     if (type !== VALID_FILE_TYPES.folder) {
@@ -119,18 +118,18 @@ export default class FilesController {
       isPublic,
       parentId: (parentId === ROOT_FOLDER_ID) || (parentId === ROOT_FOLDER_ID.toString())
         ? 0
-        : parentId,
+        : parentId
     });
   }
 
-  static async getShow(req, res) {
+  static async getShow (req, res) {
     const { user } = req;
     const id = req.params ? req.params.id : NULL_ID;
     const userId = user._id.toString();
     const file = await (await dbClient.filesCollection())
       .findOne({
         _id: new mongoDBCore.BSON.ObjectId(isValidId(id) ? id : NULL_ID),
-        userId: new mongoDBCore.BSON.ObjectId(isValidId(userId) ? userId : NULL_ID),
+        userId: new mongoDBCore.BSON.ObjectId(isValidId(userId) ? userId : NULL_ID)
       });
 
     if (!file) {
@@ -145,11 +144,11 @@ export default class FilesController {
       isPublic: file.isPublic,
       parentId: file.parentId === ROOT_FOLDER_ID.toString()
         ? 0
-        : file.parentId.toString(),
+        : file.parentId.toString()
     });
   }
 
-  static async getIndex(req, res) {
+  static async getIndex (req, res) {
     const { user } = req;
     const parentId = req.query.parentId || ROOT_FOLDER_ID.toString();
     const page = /\d+/.test((req.query.page || '').toString())
@@ -159,7 +158,7 @@ export default class FilesController {
       userId: user._id,
       parentId: parentId === ROOT_FOLDER_ID.toString()
         ? parentId
-        : new mongoDBCore.BSON.ObjectId(isValidId(parentId) ? parentId : NULL_ID),
+        : new mongoDBCore.BSON.ObjectId(isValidId(parentId) ? parentId : NULL_ID)
     };
 
     const files = await (await (await dbClient.filesCollection())
@@ -177,21 +176,21 @@ export default class FilesController {
             type: '$type',
             isPublic: '$isPublic',
             parentId: {
-              $cond: { if: { $eq: ['$parentId', '0'] }, then: 0, else: '$parentId' },
-            },
-          },
-        },
+              $cond: { if: { $eq: ['$parentId', '0'] }, then: 0, else: '$parentId' }
+            }
+          }
+        }
       ])).toArray();
     res.status(200).json(files);
   }
 
-  static async putPublish(req, res) {
+  static async putPublish (req, res) {
     const { user } = req;
     const { id } = req.params;
     const userId = user._id.toString();
     const fileFilter = {
       _id: new mongoDBCore.BSON.ObjectId(isValidId(id) ? id : NULL_ID),
-      userId: new mongoDBCore.BSON.ObjectId(isValidId(userId) ? userId : NULL_ID),
+      userId: new mongoDBCore.BSON.ObjectId(isValidId(userId) ? userId : NULL_ID)
     };
     const file = await (await dbClient.filesCollection())
       .findOne(fileFilter);
@@ -210,17 +209,17 @@ export default class FilesController {
       isPublic: true,
       parentId: file.parentId === ROOT_FOLDER_ID.toString()
         ? 0
-        : file.parentId.toString(),
+        : file.parentId.toString()
     });
   }
 
-  static async putUnpublish(req, res) {
+  static async putUnpublish (req, res) {
     const { user } = req;
     const { id } = req.params;
     const userId = user._id.toString();
     const fileFilter = {
       _id: new mongoDBCore.BSON.ObjectId(isValidId(id) ? id : NULL_ID),
-      userId: new mongoDBCore.BSON.ObjectId(isValidId(userId) ? userId : NULL_ID),
+      userId: new mongoDBCore.BSON.ObjectId(isValidId(userId) ? userId : NULL_ID)
     };
     const file = await (await dbClient.filesCollection())
       .findOne(fileFilter);
@@ -239,17 +238,17 @@ export default class FilesController {
       isPublic: false,
       parentId: file.parentId === ROOT_FOLDER_ID.toString()
         ? 0
-        : file.parentId.toString(),
+        : file.parentId.toString()
     });
   }
 
-  static async getFile(req, res) {
+  static async getFile (req, res) {
     const user = await getUserFromXToken(req);
     const { id } = req.params;
     const size = req.query.size || null;
     const userId = user ? user._id.toString() : '';
     const fileFilter = {
-      _id: new mongoDBCore.BSON.ObjectId(isValidId(id) ? id : NULL_ID),
+      _id: new mongoDBCore.BSON.ObjectId(isValidId(id) ? id : NULL_ID)
     };
     const file = await (await dbClient.filesCollection())
       .findOne(fileFilter);
