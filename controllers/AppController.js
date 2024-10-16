@@ -18,5 +18,7 @@ export default class AppController {
       res.status(200).json({ users: usersCount, files: filesCount });
     } catch (error) {
       console.error('Error fetching stats:', error);
-      res.status(500)
-
+      res.status(500);
+    }
+  }
+}
