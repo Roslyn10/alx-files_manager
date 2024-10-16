@@ -56,6 +56,7 @@ const routeController = (app) => {
   router.get('/files/:id/data', (req, res) => {
     FilesController.getFile(req, res);
   });
+  router.post('/connect', AuthController.generateAuthToken);
 };
 
 export default routeController;
